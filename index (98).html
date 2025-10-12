@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>اقرأ الكلمة — بطاقات تفاعلية</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg: #f5f7ff;
+      --ink:#101828;
+      --accent:#0ea5e9;
+      --accent-2:#22c55e;
+      --surface:#ffffff;
+      --muted:#667085;
+      --ring:#bae6fd;
+      --shadow: 0 10px 25px rgba(2,8,23,.08);
+      --rounded: 1.25rem;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:'Cairo', system-ui, -apple-system, Segoe UI, Roboto, 'Noto Sans Arabic', Tahoma, Arial, sans-serif;
+      color:var(--ink);
+      background: radial-gradient(1200px 600px at 80% -20%, #dbeafe 0%, transparent 70%),
+                  radial-gradient(900px 500px at -10% 110%, #dcfce7 0%, transparent 70%),
+                  var(--bg);
+    }
+    a{color:var(--accent)}
+    .container{max-width:980px;margin:0 auto;padding:24px}
+    header{
+      display:flex;align-items:center;justify-content:space-between;
+      gap:16px;margin-bottom:20px
+    }
+    .brand{display:flex;align-items:center;gap:10px}
+    .logo{
+      width:44px;height:44px;border-radius:14px;
+      background:linear-gradient(135deg, #38bdf8, #22c55e);
+      box-shadow: var(--shadow); display:grid;place-items:center;color:#fff;font-weight:900
+    }
+    .card{
+      background:var(--surface);
+      border-radius:var(--rounded);
+      padding:20px;
+      box-shadow:var(--shadow);
+      border:1px solid #eff6ff;
+    }
+    .home-grid{display:grid;grid-template-columns:1fr;gap:16px}
+    @media (min-width:720px){ .home-grid{grid-template-columns:repeat(3, 1fr)} }
+    .btn{
+      display:inline-flex;align-items:center;justify-content:center;gap:.6rem;
+      padding:12px 16px;border-radius:14px;border:1px solid #e5e7eb;
+      background:#fff;color:var(--ink);text-decoration:none;font-weight:700;
+      box-shadow:var(--shadow);cursor:pointer;transition:all .15s ease
+    }
+    .btn:hover{transform:translateY(-1px);}
+    .btn-primary{background:linear-gradient(180deg,#38bdf8,#0ea5e9);color:#fff;border-color:transparent}
+    .btn-green{background:linear-gradient(180deg,#34d399,#22c55e);color:#073b1a;border-color:transparent}
+    .btn-ghost{background:transparent;border-color:#dbeafe}
+    .tag{display:inline-block;font-size:.85rem;background:#eff6ff;color:#075985;border:1px solid #e0f2fe;border-radius:999px;padding:2px 10px;margin-inline:4px}
+    .stack{display:flex;flex-direction:column;gap:10px}
+    .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+    .hidden{display:none !important}
+    .center{text-align:center}
+    .title{font-size:clamp(1.6rem,3vw,2.2rem);margin:0}
+    .subtitle{margin:0;color:var(--muted)}
+    .pill{
+      display:inline-flex;align-items:center;gap:.5rem;
+      padding:8px 12px;border-radius:999px;background:#fff;border:1px solid #e5e7eb;box-shadow:var(--shadow)
+    }
+    .view{display:none}
+    .view.active{display:block}
+    .toolbar{display:flex;justify-content:space-between;gap:10px;align-items:center;margin:8px 0 14px}
+    .status{font-weight:700}
+    .progress{
+      height:8px;background:#f1f5f9;border-radius:999px;overflow:hidden
+    }
+    .progress > span{
+      display:block;height:100%;background:linear-gradient(90deg,#38bdf8,#22c55e)
+    }
+    .word{
+      font-size:clamp(2.4rem,5vw,3.8rem);margin:0 0 8px 0;letter-spacing:.5px
+    }
+    .seg{font-size:1.2rem;color:#0f766e;background:#ecfeff;border:1px dashed #a5f3fc;border-radius:14px;padding:10px 12px;display:inline-flex;gap:.65rem;flex-wrap:wrap}
+    .sentence{font-size:1.2rem;margin:12px auto;color:#334155;background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;padding:12px;display:inline-flex;align-items:center;gap:10px}
+    .controls{display:flex;justify-content:center;gap:10px;margin:14px 0 0}
+    .controls .btn{min-width:120px}
+    .inline-btn{border:none;background:#eef2ff;color:#3730a3;border-radius:10px;padding:6px 10px;font-weight:700;cursor:pointer}
+    .muted{color:#64748b}
+    .sep{height:1px;background:#eef2ff;margin:12px 0}
+    .kdraw{border:2px dashed #c7d2fe;border-radius:16px;background:#fafaff;padding:10px}
+    canvas{background:#fff;border-radius:12px;display:block;width:100%;height:220px;border:1px solid #e5e7eb; touch-action:none;}
+    .typing{width:100%;height:220px;border:1px solid #e5e7eb;border-radius:12px;padding:16px;
+            font-size:2rem;line-height:2.6rem;text-align:center;background:#fff}
+    footer{margin-top:24px;color:#64748b;font-size:.95rem;text-align:center}
+    .chip{display:inline-flex;align-items:center;border:1px solid #e5e7eb;background:#fff;border-radius:999px;padding:6px 10px;gap:.5rem}
+    .chip input{margin:0}
+    .grid-2{display:grid;grid-template-columns:1fr;gap:12px}
+    @media (min-width:820px){.grid-2{grid-template-columns:1fr 1fr}}
+    .table{width:100%;border-collapse:collapse}
+    .table th,.table td{border-bottom:1px solid #eef2ff;padding:8px 6px;text-align:center}
+    .field{display:flex;flex-direction:column;gap:6px}
+    .field input,.field select,.field textarea{
+      padding:10px;border-radius:12px;border:1px solid #e5e7eb;background:#fff;font-family:inherit
+    }
+    .hint{font-size:.92rem;color:#6b7280}
+    .note{background:#fffbeb;border:1px solid #fde68a;color:#78350f;padding:10px;border-radius:12px}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="brand">
+        <div class="logo" aria-hidden="true">أ</div>
+        <div>
+          <h1 class="title">اقرأ الكلمة — بطاقات تفاعلية</h1>
+          <p class="subtitle">نشاط صفّي صوتي مع تدرّج مهاري (حركات/مدود/شدّة) وتقسيم إلى مجالات.</p>
+        </div>
+      </div>
+      <div class="row">
+        <button class="btn btn-ghost" id="btnHome" aria-label="الصفحة الرئيسية">الرئيسية</button>
+        <button class="btn btn-green" id="btnTeacher" aria-label="مفتاح المعلمة">مفتاح المعلمة</button>
+      </div>
+    </header>
+
+    <!-- HOME VIEW -->
+    <section id="view-home" class="view active">
+      <div class="card stack">
+        <h2 class="center" style="margin:0 0 6px 0;">ابدئي من هنا</h2>
+        <p class="center muted" style="margin:0 0 10px 0;">اختاري المستوى أولًا، ثم حدّدي «المجال» و«المهارة» واضغطي ابدأ.</p>
+        <div class="home-grid">
+          <div class="card stack">
+            <div class="row" style="justify-content:center">
+              <span class="tag">المستوى 1</span>
+              <span class="tag">سهل</span>
+            </div>
+            <p class="center muted">حركات قصيرة وسكون بسيط، كلمات أساسية.</p>
+            <button class="btn btn-primary" onclick="openLevel(1)">ابدأ المستوى 1</button>
+          </div>
+          <div class="card stack">
+            <div class="row" style="justify-content:center">
+              <span class="tag">المستوى 2</span>
+              <span class="tag">متوسط</span>
+            </div>
+            <p class="center muted">مدود طويلة وشدّة وبعض تركيب متقدّم.</p>
+            <button class="btn btn-primary" onclick="openLevel(2)">ابدأ المستوى 2</button>
+          </div>
+          <div class="card stack">
+            <h3 class="center" style="margin:0">روابط سريعة</h3>
+            <div class="row" style="justify-content:center;flex-wrap:wrap">
+              <span class="pill">📚 جميع البطاقات: <strong id="countAll"></strong></span>
+              <span class="pill">🍎 طعام: <strong id="countFood"></strong></span>
+              <span class="pill">🐾 حيوانات: <strong id="countAnimals"></strong></span>
+              <span class="pill">🏫 مدرستي: <strong id="countSchool"></strong></span>
+              <span class="pill">👨‍👩‍👧‍👦 عائلتي: <strong id="countFamily"></strong></span>
+            </div>
+            <div class="center">
+              <button class="btn" onclick="startCards({level:null, domain:'all', skill:'all'})">ابدأ كل البطاقات</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- LEVEL SELECT VIEW -->
+    <section id="view-level" class="view">
+      <div class="card">
+        <h2 class="center" id="levelTitle">اختيار التصفية</h2>
+        <div class="grid-2">
+          <div class="card">
+            <h3 class="center" style="margin-top:0">اختر «المجال»</h3>
+            <div class="row" style="justify-content:center;flex-wrap:wrap">
+              <label class="chip"><input type="radio" name="domain" value="all" checked> الكل</label>
+              <label class="chip"><input type="radio" name="domain" value="طعام"> طعام</label>
+              <label class="chip"><input type="radio" name="domain" value="حيوانات"> حيوانات</label>
+              <label class="chip"><input type="radio" name="domain" value="مدرستي"> مدرستي</label>
+              <label class="chip"><input type="radio" name="domain" value="عائلتي"> عائلتي</label>
+            </div>
+          </div>
+          <div class="card">
+            <h3 class="center" style="margin-top:0">اختر «المهارة»</h3>
+            <div class="row" style="justify-content:center;flex-wrap:wrap">
+              <label class="chip"><input type="radio" name="skill" value="all" checked> الكل</label>
+              <label class="chip"><input type="radio" name="skill" value="short_vowels"> حركات قصيرة</label>
+              <label class="chip"><input type="radio" name="skill" value="sukun"> سكون</label>
+              <label class="chip"><input type="radio" name="skill" value="long_vowels"> مدود</label>
+              <label class="chip"><input type="radio" name="skill" value="shadda"> شدّة</label>
+            </div>
+          </div>
+        </div>
+        <div class="center" style="margin-top:10px">
+          <button class="btn btn-primary" id="btnStartFiltered">ابدأ</button>
+          <button class="btn" onclick="go('view-home')">رجوع</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- CARDS VIEW -->
+    <section id="view-cards" class="view">
+      <div class="toolbar">
+        <div class="row">
+          <span class="tag" id="tagLevel"></span>
+          <span class="tag" id="tagDomain"></span>
+          <span class="tag" id="tagSkill"></span>
+        </div>
+        <div class="row">
+          <button class="btn" id="btnShowSeg">إظهار التقطيع</button>
+          <button class="btn" id="btnHideSeg" class="hidden">إخفاء التقطيع</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="status">
+          <span id="statusIndex">١/٢٤</span>
+        </div>
+        <div class="progress" aria-hidden="true" style="margin:8px 0 14px 0"><span id="bar" style="width:0%"></span></div>
+
+        <h2 class="word" id="wordText">سَمَكَةٌ</h2>
+
+        <div id="segWrap" class="seg hidden" aria-live="polite"></div>
+
+        <div class="sentence">
+          <button class="inline-btn" id="btnSpeakSentence" aria-label="انطق الجملة">🔊</button>
+          <span id="sentenceText">سَمَكَةٌ لَذِيذَةٌ فِي البَحْرِ.</span>
+        </div>
+
+        <div class="row" style="justify-content:center;margin:8px 0 4px 0">
+          <button class="btn" id="btnSpeakWord" aria-label="انطق الكلمة">🔊 انطق الكلمة</button>
+          <button class="btn" id="btnCopyWord" aria-label="انسخ الكلمة">📋 نسخ</button>
+        </div>
+
+        <div class="sep"></div>
+
+        <div class="kdraw">
+          <div class="row" style="justify-content:space-between;align-items:center">
+            <strong>✍️ مساحة النسخ</strong>
+            <div class="row">
+              <label class="chip"><input type="radio" name="mode" value="pen" checked> رسم بالقلم/الفأرة</label>
+              <label class="chip"><input type="radio" name="mode" value="text"> كتابة بلوحة المفاتيح</label>
+              <button class="inline-btn" id="btnClearDraw">مسح</button>
+            </div>
+          </div>
+          <div id="penArea"><canvas id="pad" width="900" height="300"></canvas></div>
+          <div id="textArea" class="hidden">
+            <textarea id="typing" class="typing" dir="rtl" placeholder="اكتبي الكلمة هنا…"></textarea>
+          </div>
+          <p class="hint" style="margin:6px 2px 0 0">اختاري وضع «الرسم» لاستخدام الفأرة/القلم، أو «الكتابة» لإدخال نص. (لا تُحفَظ الرسمة.)</p>
+        </div>
+
+        <div class="controls">
+          <button class="btn" id="btnPrev">السابق ←</button>
+          <button class="btn btn-primary" id="btnNext">التالي →</button>
+        </div>
+      </div>
+      <footer>يمكن تعديل البطاقات وإضافة بطاقات جديدة من «مفتاح المعلمة».</footer>
+    </section>
+
+    <!-- TEACHER VIEW -->
+    <section id="view-teacher" class="view">
+      <div class="card stack">
+        <h2 style="margin:0">مفتاح المعلمة</h2>
+        <p class="muted" style="margin:0">تحكّم في البيانات والإعدادات. كل شيء يعمل محليًا داخل المتصفح (لا توجد قاعدة بيانات خارجية).</p>
+
+        <div class="grid-2">
+          <div class="card stack">
+            <h3 style="margin:0">مصفوفة المستويات والمهارات</h3>
+            <table class="table">
+              <thead><tr><th>المستوى</th><th>التركيز</th><th>أمثلة</th></tr></thead>
+              <tbody>
+                <tr><td>1</td><td>حركات قصيرة + سكون</td><td>قَلَمٌ، دَفْتَرٌ، مَكْتَبٌ…</td></tr>
+                <tr><td>2</td><td>مدود + شدّة</td><td>كِتَابٌ، تُفَّاحَةٌ، قِطَّةٌ…</td></tr>
+              </tbody>
+            </table>
+            <div class="note">نصيحة: اطلبي من الطالبة قراءة الكلمة قبل تشغيل الصوت.</div>
+          </div>
+
+          <div class="card stack">
+            <h3 style="margin:0">إضافة بطاقة جديدة</h3>
+            <div class="grid-2">
+              <div class="field"><label>الكلمة (مشكولة)</label><input id="fWord" placeholder="مثال: قَلَمٌ"></div>
+              <div class="field"><label>المستوى</label>
+                <select id="fLevel">
+                  <option value="1">1 — سهل</option>
+                  <option value="2">2 — متوسط</option>
+                </select>
+              </div>
+              <div class="field"><label>المجال</label>
+                <select id="fDomain">
+                  <option>مدرستي</option>
+                  <option>طعام</option>
+                  <option>حيوانات</option>
+                  <option>عائلتي</option>
+                </select>
+              </div>
+              <div class="field"><label>المهارة</label>
+                <select id="fSkill">
+                  <option value="short_vowels">حركات قصيرة</option>
+                  <option value="sukun">سكون</option>
+                  <option value="long_vowels">مدود</option>
+                  <option value="shadda">شدّة</option>
+                </select>
+              </div>
+              <div class="field" style="grid-column:1/-1"><label>التقطيع الصوتي (استخدم «/» بين المقاطع)</label><input id="fSeg" placeholder="قَ / لَ / مٌ"></div>
+              <div class="field" style="grid-column:1/-1"><label>جملة قصيرة</label><input id="fSent" placeholder="هَذَا قَلَمٌ أَزْرَقُ."></div>
+            </div>
+            <div class="row" style="justify-content:flex-end">
+              <button class="btn btn-green" id="btnAdd">إضافة</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card stack">
+          <h3 style="margin:0">البيانات — تصدير/استيراد</h3>
+          <div class="row" style="flex-wrap:wrap;gap:10px">
+            <button class="btn" id="btnExport">تصدير JSON</button>
+            <label class="btn">
+              استيراد JSON
+              <input id="fileImport" type="file" accept="application/json" style="display:none">
+            </label>
+            <button class="btn" id="btnReset">استعادة مجموعة البداية</button>
+          </div>
+          <p class="hint">تُحفَظ أي تعديلات في <strong>localStorage</strong> على جهازك.</p>
+        </div>
+
+        <div class="center">
+          <button class="btn" onclick="go('view-home')">رجوع للرئيسية</button>
+        </div>
+      </div>
+    </section>
+
+    <footer>© اقرأ الكلمة — نسخة تجريبية تعليمية — برمجة /أ: فاطمة هزازي</footer>
+  </div>
+
+<script>
+'use strict';
+
+/* ---------- أرقام هندية للواجهة ---------- */
+function toArabicDigits(n){
+  const map = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩'];
+  return String(n).replace(/[0-9]/g, d => map[Number(d)]);
+}
+
+/* ---------- البيانات الافتراضية (24 بطاقة) ---------- */
+const DEFAULT_DATA = [
+  // المستوى 1 — مدرستي
+  { word:'قَلَمٌ', seg:'قَ / لَ / مٌ', sentence:'هَذَا قَلَمٌ أَزْرَقُ.', domain:'مدرستي', level:1, skill:'short_vowels' },
+  { word:'دَفْتَرٌ', seg:'دَ / فْ / تَ / رٌ', sentence:'هَذَا دَفْتَرٌ جَدِيدٌ.', domain:'مدرستي', level:1, skill:'sukun' },
+  { word:'مَكْتَبٌ', seg:'مَ / كْ / تَ / بٌ', sentence:'فِي الصَّفِّ مَكْتَبٌ كَبِيرٌ.', domain:'مدرستي', level:1, skill:'sukun' },
+  { word:'مِسْطَرَةٌ', seg:'مِ / سْ / طَ / رَ / ةٌ', sentence:'عِنْدِي مِسْطَرَةٌ طَوِيلَةٌ.', domain:'مدرستي', level:1, skill:'sukun' },
+
+  // المستوى 1 — طعام
+  { word:'خُبْزٌ', seg:'خُ / بْ / زٌ', sentence:'أُحِبُّ خُبْزًا سَاخِنًا.', domain:'طعام', level:1, skill:'sukun' },
+  { word:'عَسَلٌ', seg:'عَ / سَ / لٌ', sentence:'العَسَلُ لَذِيذٌ.', domain:'طعام', level:1, skill:'short_vowels' },
+  { word:'مَوْزٌ', seg:'مَوْ / زٌ', sentence:'المَوْزُ طَعَامٌ مُفِيدٌ.', domain:'طعام', level:1, skill:'sukun' },
+  { word:'أَرْزٌ', seg:'أَ / رْ / زٌ', sentence:'نَأْكُلُ أَرْزًا بِالخُضَارِ.', domain:'طعام', level:1, skill:'sukun' },
+
+  // المستوى 1 — حيوانات
+  { word:'أَرْنَبٌ', seg:'أَ / رْ / نَ / بٌ', sentence:'الأَرْنَبُ سَرِيعٌ.', domain:'حيوانات', level:1, skill:'sukun' },
+  { word:'نَحْلَةٌ', seg:'نَ / حْ / لَ / ةٌ', sentence:'النَّحْلَةُ تَصْنَعُ العَسَلَ.', domain:'حيوانات', level:1, skill:'sukun' },
+  { word:'طَيْرٌ', seg:'طَ / يْ / رٌ', sentence:'الطَّيْرُ يَطِيرُ فِي السَّمَاءِ.', domain:'حيوانات', level:1, skill:'sukun' },
+  { word:'سَمَكَةٌ', seg:'سَ / مَ / كَ / ةٌ', sentence:'سَمَكَةٌ فِي الحَوْضِ.', domain:'حيوانات', level:1, skill:'short_vowels' },
+
+  // المستوى 2 — مدرستي
+  { word:'كِتَابٌ', seg:'كِ / تا / بٌ', sentence:'أَقْرَأُ كِتَابًا مُفِيدًا.', domain:'مدرستي', level:2, skill:'long_vowels' },
+  { word:'دُرُوسٌ', seg:'دُ / رُو / صٌ', sentence:'لَدَيْنَا دُرُوسٌ مُهِمَّةٌ.', domain:'مدرستي', level:2, skill:'long_vowels' },
+  { word:'مُعَلِّمَةٌ', seg:'مُ / عَلِّ / مَ / ةٌ', sentence:'مُعَلِّمَتُنَا رَائِعَةٌ.', domain:'مدرستي', level:2, skill:'shadda' },
+  { word:'كُرْسِيٌّ', seg:'كُ / رْ / سِيٌّ', sentence:'هَذَا كُرْسِيٌّ مُرِيحٌ.', domain:'مدرستي', level:2, skill:'long_vowels' },
+
+  // المستوى 2 — حيوانات
+  { word:'قِطَّةٌ', seg:'قِ / طَّ / ةٌ', sentence:'قِطَّتِي صَغِيرَةٌ.', domain:'حيوانات', level:2, skill:'shadda' },
+  { word:'جِمَالٌ', seg:'جِ / ما / لٌ', sentence:'الجِمَالُ حَيَوَانَاتٌ صَبُورَةٌ.', domain:'حيوانات', level:2, skill:'long_vowels' },
+  { word:'ذِئَابٌ', seg:'ذِ / آ / بٌ', sentence:'تَعِيشُ الذِّئَابُ فِي الغَابَةِ.', domain:'حيوانات', level:2, skill:'long_vowels' },
+
+  // المستوى 2 — طعام
+  { word:'تُفَّاحَةٌ', seg:'تُ / فَّا / حَ / ةٌ', sentence:'آكُلُ تُفَّاحَةً كُلَّ يَوْمٍ.', domain:'طعام', level:2, skill:'shadda' },
+  { word:'حَلِيبٌ', seg:'حَ / لِي / بٌ', sentence:'أَشْرَبُ حَلِيبًا دَافِئًا.', domain:'طعام', level:2, skill:'long_vowels' },
+  { word:'زَيْتُونٌ', seg:'زَيْ / تُو / نٌ', sentence:'نَأْكُلُ الزَّيْتُونَ مَعَ الخُبْزِ.', domain:'طعام', level:2, skill:'long_vowels' },
+  { word:'عُصِيرٌ', seg:'عُ / صِي / رٌ', sentence:'أُفَضِّلُ عُصِيرَ البُرْتُقَالِ.', domain:'طعام', level:2, skill:'long_vowels' },
+
+  // المستوى 2 — عائلتي
+  { word:'أُمٌّ', seg:'أُ / مٌّ', sentence:'أُمِّي كَرِيمَةٌ.', domain:'عائلتي', level:2, skill:'shadda' },
+  { word:'جَدَّةٌ', seg:'جَ / دَّ / ةٌ', sentence:'أُحِبُّ جَدَّتِي.', domain:'عائلتي', level:2, skill:'shadda' },
+  { word:'أُسْرَةٌ', seg:'أُ / سْ / رَ / ةٌ', sentence:'هَذِهِ أُسْرَتِي.', domain:'عائلتي', level:2, skill:'sukun' }
+];
+
+const STORAGE_KEY = 'iqra_cards_v2';
+
+/* ---------- تخزين/تحميل ---------- */
+function loadData(){
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if(!raw){ localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_DATA)); return [...DEFAULT_DATA]; }
+  try{ return JSON.parse(raw); }catch{ return [...DEFAULT_DATA]; }
+}
+function saveData(arr){ localStorage.setItem(STORAGE_KEY, JSON.stringify(arr)); }
+
+let DATA = loadData();
+
+/* ---------- عدادات على الرئيسية ---------- */
+function updateCounts(){
+  const all = DATA.length;
+  const food = DATA.filter(x=>x.domain==='طعام').length;
+  const animals = DATA.filter(x=>x.domain==='حيوانات').length;
+  const school = DATA.filter(x=>x.domain==='مدرستي').length;
+  const family = DATA.filter(x=>x.domain==='عائلتي').length;
+  document.getElementById('countAll').textContent = toArabicDigits(all);
+  document.getElementById('countFood').textContent = toArabicDigits(food);
+  document.getElementById('countAnimals').textContent = toArabicDigits(animals);
+  document.getElementById('countSchool').textContent = toArabicDigits(school);
+  document.getElementById('countFamily').textContent = toArabicDigits(family);
+}
+
+/* ---------- تنقّل بين المشاهد ---------- */
+function go(id){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+document.getElementById('btnHome').addEventListener('click', ()=>go('view-home'));
+document.getElementById('btnTeacher').addEventListener('click', ()=>go('view-teacher'));
+
+/* ---------- اختيار المستوى والبدء ---------- */
+let currentSet = [];
+let currentIndex = 0;
+let currentFilters = { level:null, domain:'all', skill:'all' };
+
+function openLevel(level){
+  currentFilters.level = level;
+  document.getElementById('levelTitle').textContent = 'المستوى ' + level + ' — اختر التصفية';
+  go('view-level');
+}
+
+document.getElementById('btnStartFiltered').addEventListener('click', ()=>{
+  const domain = document.querySelector('input[name="domain"]:checked').value;
+  const skill = document.querySelector('input[name="skill"]:checked').value;
+  startCards({level: currentFilters.level, domain, skill});
+});
+
+function startCards({level=null, domain='all', skill='all'}){
+  currentFilters = {level, domain, skill};
+  currentSet = DATA.filter(item=>{
+    const okLevel = (level===null) ? true : item.level===level;
+    const okDomain = (domain==='all') ? true : item.domain===domain;
+    const okSkill = (skill==='all') ? true : item.skill===skill;
+    return okLevel && okDomain && okSkill;
+  });
+  if(currentSet.length===0){ alert('لا توجد بطاقات وفق التصفية المختارة.'); return; }
+  currentIndex = 0;
+  renderTags();
+  go('view-cards');
+  renderCard();
+}
+
+function renderTags(){
+  const tL = document.getElementById('tagLevel');
+  const tD = document.getElementById('tagDomain');
+  const tS = document.getElementById('tagSkill');
+  tL.textContent = currentFilters.level? ('المستوى ' + currentFilters.level): 'كل المستويات';
+  tD.textContent = currentFilters.domain==='all'? 'كل المجالات' : currentFilters.domain;
+  const skillMap = {all:'كل المهارات', short_vowels:'حركات قصيرة', sukun:'سكون', long_vowels:'مدود', shadda:'شدّة'};
+  tS.textContent = skillMap[currentFilters.skill];
+}
+
+/* ---------- بطاقة ---------- */
+const elWord = document.getElementById('wordText');
+const elSeg = document.getElementById('segWrap');
+const elSent = document.getElementById('sentenceText');
+const elStatus = document.getElementById('statusIndex');
+const bar = document.getElementById('bar');
+const btnShowSeg = document.getElementById('btnShowSeg');
+const btnHideSeg = document.getElementById('btnHideSeg');
+
+function renderCard(){
+  const item = currentSet[currentIndex];
+  elWord.textContent = item.word;
+  elSeg.innerHTML = item.seg.split('/').map(x=>`<span>${x.trim()}</span>`).join('');
+  elSent.textContent = item.sentence;
+  const idx = toArabicDigits(currentIndex+1) + ' / ' + toArabicDigits(currentSet.length);
+  elStatus.textContent = idx;
+  bar.style.width = ((currentIndex+1)/currentSet.length*100).toFixed(2)+'%';
+  hideSeg();
+  clearTyping();
+  clearPad();
+}
+
+function hideSeg(){ elSeg.classList.add('hidden'); btnHideSeg.classList.add('hidden'); btnShowSeg.classList.remove('hidden'); }
+function showSeg(){ elSeg.classList.remove('hidden'); btnHideSeg.classList.remove('hidden'); btnShowSeg.classList.add('hidden'); }
+btnShowSeg.addEventListener('click', showSeg);
+btnHideSeg.addEventListener('click', hideSeg);
+
+/* ---------- تنقّل ---------- */
+document.getElementById('btnNext').addEventListener('click', ()=>{ if(currentIndex<currentSet.length-1){ currentIndex++; renderCard(); } });
+document.getElementById('btnPrev').addEventListener('click', ()=>{ if(currentIndex>0){ currentIndex--; renderCard(); } });
+
+/* دعم السحب على الجوال */
+let touchX = null;
+document.getElementById('view-cards').addEventListener('touchstart', e=>{ touchX = e.changedTouches[0].clientX; }, {passive:true});
+document.getElementById('view-cards').addEventListener('touchend', e=>{
+  if(touchX===null) return;
+  const dx = e.changedTouches[0].clientX - touchX;
+  if(Math.abs(dx) > 60){
+    if(dx < 0){ // سحب لليسار → التالي
+      if(currentIndex<currentSet.length-1){ currentIndex++; renderCard(); }
+    }else{
+      if(currentIndex>0){ currentIndex--; renderCard(); }
+    }
+  }
+  touchX = null;
+}, {passive:true});
+
+/* ---------- نسخ الكلمة ---------- */
+document.getElementById('btnCopyWord').addEventListener('click', async ()=>{
+  try{
+    await navigator.clipboard.writeText(elWord.textContent);
+    alert('تم نسخ الكلمة ✔');
+  }catch{ alert('تعذّر النسخ.'); }
+});
+
+/* ---------- نطق ---------- */
+let AR_VOICES = [];
+function pickArabicVoice(){
+  const v = speechSynthesis.getVoices().filter(v=>/^ar(-|$)/i.test(v.lang));
+  AR_VOICES = v;
+}
+if('speechSynthesis' in window){
+  speechSynthesis.onvoiceschanged = pickArabicVoice;
+  pickArabicVoice();
+}
+function speak(text){
+  if(!('speechSynthesis' in window)){ alert('ميزة النطق غير متاحة في هذا المتصفح.'); return; }
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'ar-SA';
+  u.rate = 0.85; u.pitch = 1.05;
+  if(AR_VOICES.length){ u.voice = AR_VOICES[0]; }
+  speechSynthesis.cancel();
+  speechSynthesis.speak(u);
+}
+document.getElementById('btnSpeakWord').addEventListener('click', ()=>speak(elWord.textContent));
+document.getElementById('btnSpeakSentence').addEventListener('click', ()=>speak(elSent.textContent));
+
+/* ---------- وضع الكتابة/الرسم ---------- */
+const penArea = document.getElementById('penArea');
+const textArea = document.getElementById('textArea');
+const typing = document.getElementById('typing');
+function setMode(mode){
+  if(mode==='text'){ penArea.classList.add('hidden'); textArea.classList.remove('hidden'); typing.focus(); }
+  else{ textArea.classList.add('hidden'); penArea.classList.remove('hidden'); }
+}
+document.querySelectorAll('input[name="mode"]').forEach(r=>{
+  r.addEventListener('change', (e)=> setMode(e.target.value));
+});
+function clearTyping(){ typing.value=''; }
+
+/* ---------- مساحة النسخ (Canvas + Pointer Events) ---------- */
+const pad = document.getElementById('pad');
+const ctx = pad.getContext('2d');
+
+function fitCanvas(){
+  const dpr = Math.max(1, window.devicePixelRatio||1);
+  const cssWidth = pad.clientWidth;
+  const cssHeight = pad.clientHeight;
+  pad.width = Math.floor(cssWidth * dpr);
+  pad.height = Math.floor(cssHeight * dpr);
+  ctx.setTransform(1,0,0,1,0,0);     // reset any existing scale
+  ctx.scale(dpr, dpr);               // scale to CSS pixels
+  ctx.lineCap = 'round'; ctx.lineJoin='round';
+  ctx.lineWidth = 4; ctx.strokeStyle = '#111827';
+  ctx.clearRect(0,0,cssWidth,cssHeight);
+}
+function clearPad(){ fitCanvas(); }
+fitCanvas(); window.addEventListener('resize', fitCanvas);
+
+/* Pointer events (موحد للماوس/القلم/اللمس) */
+let drawing = false, lastX=0, lastY=0;
+function ppos(e){
+  const r = pad.getBoundingClientRect();
+  const x = e.clientX - r.left;
+  const y = e.clientY - r.top;
+  return {x,y};
+}
+pad.addEventListener('pointerdown', (e)=>{
+  if(e.pointerType==='touch' || e.pointerType==='pen' || e.pointerType==='mouse'){
+    drawing = true;
+    const p = ppos(e); lastX=p.x; lastY=p.y;
+    pad.setPointerCapture(e.pointerId);
+    e.preventDefault();
+  }
+});
+pad.addEventListener('pointermove', (e)=>{
+  if(!drawing) return;
+  const p = ppos(e);
+  ctx.beginPath(); ctx.moveTo(lastX,lastY); ctx.lineTo(p.x,p.y); ctx.stroke();
+  lastX=p.x; lastY=p.y;
+  e.preventDefault();
+});
+pad.addEventListener('pointerup', (e)=>{ drawing=false; pad.releasePointerCapture(e.pointerId); e.preventDefault(); });
+pad.addEventListener('pointercancel', ()=>{ drawing=false; });
+
+document.getElementById('btnClearDraw').addEventListener('click', clearPad);
+
+/* ---------- إضافة بطاقة من مفتاح المعلمة ---------- */
+document.getElementById('btnAdd').addEventListener('click', ()=>{
+  const w = document.getElementById('fWord').value.trim();
+  const seg = document.getElementById('fSeg').value.trim();
+  const sent = document.getElementById('fSent').value.trim();
+  const level = Number(document.getElementById('fLevel').value);
+  const domain = document.getElementById('fDomain').value;
+  const skill = document.getElementById('fSkill').value;
+  if(!w || !seg || !sent){ alert('يرجى تعبئة جميع الحقول.'); return; }
+  DATA.push({word:w, seg:seg, sentence:sent, domain, level, skill});
+  saveData(DATA);
+  updateCounts();
+  alert('تمت الإضافة ✔');
+  document.getElementById('fWord').value=''; document.getElementById('fSeg').value=''; document.getElementById('fSent').value='';
+});
+
+/* ---------- تصدير/استيراد ---------- */
+document.getElementById('btnExport').addEventListener('click', ()=>{
+  const blob = new Blob([JSON.stringify(DATA, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'iqra-cards.json'; a.click();
+  setTimeout(()=>URL.revokeObjectURL(url), 1000);
+});
+document.getElementById('fileImport').addEventListener('change', (e)=>{
+  const file = e.target.files[0]; if(!file) return;
+  const r = new FileReader();
+  r.onload = ()=>{
+    try{
+      const arr = JSON.parse(r.result);
+      if(!Array.isArray(arr)) throw 'bad';
+      DATA = arr; saveData(DATA); updateCounts(); alert('تم الاستيراد ✔');
+    }catch{ alert('ملف غير صالح'); }
+  };
+  r.readAsText(file, 'utf-8');
+});
+document.getElementById('btnReset').addEventListener('click', ()=>{
+  if(confirm('استعادة مجموعة البداية؟ سيُستبدل أي تعديل.')){
+    DATA = [...DEFAULT_DATA]; saveData(DATA); updateCounts(); alert('تمت الاستعادة ✔');
+  }
+});
+
+/* ---------- أزرار عامة ---------- */
+updateCounts();
+</script>
+</body>
+</html>
