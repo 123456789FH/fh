@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>اقرأ الكلمة — بطاقات تفاعلية (تحليل تلقائي + تسجيل صوت)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg: #f5f7ff;
+      --ink:#101828;
+      --accent:#0ea5e9;
+      --accent-2:#22c55e;
+      --surface:#ffffff;
+      --muted:#667085;
+      --ring:#bae6fd;
+      --shadow: 0 10px 25px rgba(2,8,23,.08);
+      --rounded: 1.25rem;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:'Cairo', system-ui, -apple-system, Segoe UI, Roboto, 'Noto Sans Arabic', Tahoma, Arial, sans-serif;
+      color:var(--ink);
+      background: radial-gradient(1200px 600px at 80% -20%, #dbeafe 0%, transparent 70%),
+                  radial-gradient(900px 500px at -10% 110%, #dcfce7 0%, transparent 70%),
+                  var(--bg);
+    }
+    a{color:var(--accent)}
+    .container{max-width:980px;margin:0 auto;padding:24px}
+    header{
+      display:flex;align-items:center;justify-content:space-between;
+      gap:16px;margin-bottom:20px
+    }
+    .brand{display:flex;align-items:center;gap:10px}
+    .logo{
+      width:44px;height:44px;border-radius:14px;
+      background:linear-gradient(135deg, #38bdf8, #22c55e);
+      box-shadow: var(--shadow); display:grid;place-items:center;color:#fff;font-weight:900
+    }
+    .card{
+      background:var(--surface);
+      border-radius:var(--rounded);
+      padding:20px;
+      box-shadow:var(--shadow);
+      border:1px solid #eff6ff;
+    }
+    .home-grid{display:grid;grid-template-columns:1fr;gap:16px}
+    @media (min-width:720px){ .home-grid{grid-template-columns:repeat(3, 1fr)} }
+    .btn{
+      display:inline-flex;align-items:center;justify-content:center;gap:.6rem;
+      padding:12px 16px;border-radius:14px;border:1px solid #e5e7eb;
+      background:#fff;color:var(--ink);text-decoration:none;font-weight:700;
+      box-shadow:var(--shadow);cursor:pointer;transition:all .15s ease
+    }
+    .btn:hover{transform:translateY(-1px);}
+    .btn:disabled{opacity:.55;cursor:not-allowed;transform:none}
+    .btn-primary{background:linear-gradient(180deg,#38bdf8,#0ea5e9);color:#fff;border-color:transparent}
+    .btn-green{background:linear-gradient(180deg,#34d399,#22c55e);color:#073b1a;border-color:transparent}
+    .btn-ghost{background:transparent;border-color:#dbeafe}
+    .tag{display:inline-block;font-size:.85rem;background:#eff6ff;color:#075985;border:1px solid #e0f2fe;border-radius:999px;padding:2px 10px;margin-inline:4px}
+    .stack{display:flex;flex-direction:column;gap:10px}
+    .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+    .hidden{display:none !important}
+    .center{text-align:center}
+    .title{font-size:clamp(1.6rem,3vw,2.2rem);margin:0}
+    .subtitle{margin:0;color:var(--muted)}
+    .pill{
+      display:inline-flex;align-items:center;gap:.5rem;
+      padding:8px 12px;border-radius:999px;background:#fff;border:1px solid #e5e7eb;box-shadow:var(--shadow)
+    }
+    .view{display:none}
+    .view.active{display:block}
+    .toolbar{display:flex;justify-content:space-between;gap:10px;align-items:center;margin:8px 0 14px}
+    .status{font-weight:700}
+    .progress{
+      height:8px;background:#f1f5f9;border-radius:999px;overflow:hidden
+    }
+    .progress > span{
+      display:block;height:100%;background:linear-gradient(90deg,#38bdf8,#22c55e)
+    }
+    .word{
+      font-size:clamp(2.4rem,5vw,3.8rem);margin:0 0 8px 0;letter-spacing:.5px
+    }
+    .seg{font-size:1.2rem;color:#0f766e;background:#ecfeff;border:1px dashed #a5f3fc;border-radius:14px;padding:10px 12px;display:inline-flex;gap:.65rem;flex-wrap:wrap}
+    .sentence{font-size:1.2rem;margin:12px auto;color:#334155;background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;padding:12px;display:inline-flex;align-items:center;gap:10px}
+    .controls{display:flex;justify-content:center;gap:10px;margin:14px 0 0}
+    .controls .btn{min-width:120px}
+    .inline-btn{border:none;background:#eef2ff;color:#3730a3;border-radius:10px;padding:6px 10px;font-weight:700;cursor:pointer}
+    .muted{color:#64748b}
+    .sep{height:1px;background:#eef2ff;margin:12px 0}
+    .kdraw{border:2px dashed #c7d2fe;border-radius:16px;background:#fafaff;padding:10px}
+    .audioBox{border:2px dashed #bbf7d0;background:#f0fdf4}
+    canvas{background:#fff;border-radius:12px;display:block;width:100%;height:220px;border:1px solid #e5e7eb; touch-action:none;}
+    .typing{width:100%;height:220px;border:1px solid #e5e7eb;border-radius:12px;padding:16px;
+            font-size:2rem;line-height:2.6rem;text-align:center;background:#fff}
+    footer{margin-top:24px;color:#64748b;font-size:.95rem;text-align:center}
+    .chip{display:inline-flex;align-items:center;border:1px solid #e5e7eb;background:#fff;border-radius:999px;padding:6px 10px;gap:.5rem}
+    .chip input{margin:0}
+    .grid-2{display:grid;grid-template-columns:1fr;gap:12px}
+    @media (min-width:820px){.grid-2{grid-template-columns:1fr 1fr}}
+    .table{width:100%;border-collapse:collapse}
+    .table th,.table td{border-bottom:1px solid #eef2ff;padding:8px 6px;text-align:center}
+    .field{display:flex;flex-direction:column;gap:6px}
+    .field input,.field select,.field textarea{
+      padding:10px;border-radius:12px;border:1px solid #e5e7eb;background:#fff;font-family:inherit
+    }
+    .hint{font-size:.92rem;color:#6b7280}
+    .note{background:#fffbeb;border:1px solid #fde68a;color:#78350f;padding:10px;border-radius:12px}
+    .timer{font-variant-numeric:tabular-nums}
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <header>
+      <div class="brand">
+        <div class="logo" aria-hidden="true">أ</div>
+        <div>
+          <h1 class="title">اقرأ الكلمة — بطاقات تفاعلية</h1>
+          <p class="subtitle">نشاط صفّي صوتي + تحليل تلقائي للتقطيع/المهارة + تسجيل صوت المتعلم/ة.</p>
+        </div>
+      </div>
+      <div class="row">
+        <button class="btn btn-ghost" id="btnHome" aria-label="الصفحة الرئيسية">الرئيسية</button>
+        <button class="btn btn-green" id="btnTeacher" aria-label="مفتاح المعلم/ة">مفتاح المعلم/ة</button>
+      </div>
+    </header>
+
+    <!-- HOME VIEW -->
+    <section id="view-home" class="view active">
+      <div class="card stack">
+        <h2 class="center" style="margin:0 0 6px 0;">ابدأ/ي من هنا</h2>
+        <p class="center muted" style="margin:0 0 10px 0;">اختَر/ي المستوى أولًا، ثم حدّد/ي «المجال» و«المهارة» واضغط/ي «ابدأ».</p>
+
+        <div class="home-grid">
+          <div class="card stack">
+            <div class="row" style="justify-content:center">
+              <span class="tag">المستوى 1</span>
+              <span class="tag">سهل</span>
+            </div>
+            <p class="center muted">حركات قصيرة وسكون بسيط، كلمات أساسية.</p>
+            <button class="btn btn-primary" onclick="openLevel(1)">ابدأ المستوى 1</button>
+          </div>
+
+          <div class="card stack">
+            <div class="row" style="justify-content:center">
+              <span class="tag">المستوى 2</span>
+              <span class="tag">متوسط</span>
+            </div>
+            <p class="center muted">مدود طويلة وشدّة وبعض تركيب متقدّم.</p>
+            <button class="btn btn-primary" onclick="openLevel(2)">ابدأ المستوى 2</button>
+          </div>
+
+          <div class="card stack">
+            <h3 class="center" style="margin:0">روابط سريعة</h3>
+            <div class="row" style="justify-content:center;flex-wrap:wrap">
+              <span class="pill">📚 جميع البطاقات: <strong id="countAll"></strong></span>
+              <span class="pill">🍎 طعام: <strong id="countFood"></strong></span>
+              <span class="pill">🐾 حيوانات: <strong id="countAnimals"></strong></span>
+              <span class="pill">🏫 مدرستي: <strong id="countSchool"></strong></span>
+              <span class="pill">👨‍👩‍👧‍👦 عائلتي: <strong id="countFamily"></strong></span>
+            </div>
+            <div class="center">
+              <button class="btn" onclick="startCards({level:null, domain:'all', skill:'all'})">ابدأ كل البطاقات</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- LEVEL SELECT VIEW -->
+    <section id="view-level" class="view">
+      <div class="card">
+        <h2 class="center" id="levelTitle">اختيار التصفية</h2>
+        <div class="grid-2">
+          <div class="card">
+            <h3 class="center" style="margin-top:0">اختر/ي «المجال»</h3>
+            <div class="row" style="justify-content:center;flex-wrap:wrap">
+              <label class="chip"><input type="radio" name="domain" value="all" checked> الكل</label>
+              <label class="chip"><input type="radio" name="domain" value="طعام"> طعام</label>
+              <label class="chip"><input type="radio" name="domain" value="حيوانات"> حيوانات</label>
+              <label class="chip"><input type="radio" name="domain" value="مدرستي"> مدرستي</label>
+              <label class="chip"><input type="radio" name="domain" value="عائلتي"> عائلتي</label>
+            </div>
+          </div>
+          <div class="card">
+            <h3 class="center" style="margin-top:0">اختر/ي «المهارة»</h3>
+            <div class="row" style="justify-content:center;flex-wrap:wrap">
+              <label class="chip"><input type="radio" name="skill" value="all" checked> الكل</label>
+              <label class="chip"><input type="radio" name="skill" value="short_vowels"> حركات قصيرة</label>
+              <label class="chip"><input type="radio" name="skill" value="sukun"> سكون</label>
+              <label class="chip"><input type="radio" name="skill" value="long_vowels"> مدود</label>
+              <label class="chip"><input type="radio" name="skill" value="shadda"> شدّة</label>
+            </div>
+          </div>
+        </div>
+        <div class="center" style="margin-top:10px">
+          <button class="btn btn-primary" id="btnStartFiltered">ابدأ</button>
+          <button class="btn" onclick="go('view-home')">رجوع</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- CARDS VIEW -->
+    <section id="view-cards" class="view">
+      <div class="toolbar">
+        <div class="row">
+          <span class="tag" id="tagLevel"></span>
+          <span class="tag" id="tagDomain"></span>
+          <span class="tag" id="tagSkill"></span>
+        </div>
+        <div class="row">
+          <button class="btn" id="btnShowSeg">إظهار التقطيع</button>
+          <button class="btn hidden" id="btnHideSeg">إخفاء التقطيع</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="status">
+          <span id="statusIndex">١/٢٤</span>
+        </div>
+        <div class="progress" aria-hidden="true" style="margin:8px 0 14px 0"><span id="bar" style="width:0%"></span></div>
+
+        <h2 class="word" id="wordText">سَمَكَةٌ</h2>
+        <div id="segWrap" class="seg hidden" aria-live="polite"></div>
+
+        <div class="sentence">
+          <button class="inline-btn" id="btnSpeakSentence" aria-label="انطق الجملة">🔊</button>
+          <span id="sentenceText">سَمَكَةٌ فِي الحَوْضِ.</span>
+        </div>
+
+        <div class="row" style="justify-content:center;margin:8px 0 4px 0">
+          <button class="btn" id="btnSpeakWord" aria-label="انطق الكلمة">🔊 انطق الكلمة</button>
+          <button class="btn" id="btnCopyWord" aria-label="انسخ الكلمة">📋 نسخ</button>
+        </div>
+
+        <div class="sep"></div>
+
+        <!-- AUDIO RECORDING -->
+        <div class="kdraw audioBox">
+          <div class="row" style="justify-content:space-between;align-items:center">
+            <strong>🎙️ سجّل/ي قراءتك</strong>
+            <span class="pill" id="recOverall">جاهز</span>
+          </div>
+
+          <div class="grid-2" style="margin-top:10px">
+            <div class="card stack" style="box-shadow:none;border:1px solid #dcfce7">
+              <div class="row" style="justify-content:space-between;align-items:center">
+                <strong>تسجيل الكلمة</strong>
+                <span class="muted timer" id="recWordTimer">00:00</span>
+              </div>
+              <div class="row" style="justify-content:center;flex-wrap:wrap">
+                <button class="btn" id="btnRecWordStart">🎙️ ابدأ</button>
+                <button class="btn btn-primary hidden" id="btnRecWordStop">⏹️ إيقاف</button>
+                <button class="btn" id="btnRecWordPlay" disabled>▶️ تشغيل</button>
+                <button class="btn" id="btnRecWordDelete" disabled>🗑️ حذف</button>
+              </div>
+              <audio id="audioWord" class="hidden" controls style="width:100%"></audio>
+            </div>
+
+            <div class="card stack" style="box-shadow:none;border:1px solid #dcfce7">
+              <div class="row" style="justify-content:space-between;align-items:center">
+                <strong>تسجيل الجملة</strong>
+                <span class="muted timer" id="recSentTimer">00:00</span>
+              </div>
+              <div class="row" style="justify-content:center;flex-wrap:wrap">
+                <button class="btn" id="btnRecSentStart">🎙️ ابدأ</button>
+                <button class="btn btn-primary hidden" id="btnRecSentStop">⏹️ إيقاف</button>
+                <button class="btn" id="btnRecSentPlay" disabled>▶️ تشغيل</button>
+                <button class="btn" id="btnRecSentDelete" disabled>🗑️ حذف</button>
+              </div>
+              <audio id="audioSent" class="hidden" controls style="width:100%"></audio>
+            </div>
+          </div>
+
+          <p class="hint" style="margin:8px 2px 0 0">
+            التسجيل محلي داخل المتصفح ولا يتم رفعه لأي جهة. قد يطلب المتصفح إذن الميكروفون. (HTTPS/localhost مطلوب للتسجيل)
+          </p>
+        </div>
+
+        <div class="sep"></div>
+
+        <!-- COPYING AREA -->
+        <div class="kdraw">
+          <div class="row" style="justify-content:space-between;align-items:center">
+            <strong>✍️ مساحة النسخ</strong>
+            <div class="row">
+              <label class="chip"><input type="radio" name="mode" value="pen" checked> رسم بالقلم/الفأرة</label>
+              <label class="chip"><input type="radio" name="mode" value="text"> كتابة بلوحة المفاتيح</label>
+              <button class="inline-btn" id="btnClearDraw">مسح</button>
+            </div>
+          </div>
+          <div id="penArea"><canvas id="pad" width="900" height="300"></canvas></div>
+          <div id="textArea" class="hidden">
+            <textarea id="typing" class="typing" dir="rtl" placeholder="اكتب/ي الكلمة هنا…"></textarea>
+          </div>
+          <p class="hint" style="margin:6px 2px 0 0">يمكنك اختيار وضع «الرسم» لاستخدام الفأرة/القلم، أو «الكتابة» لإدخال نص. (لا تُحفَظ الرسمة.)</p>
+        </div>
+
+        <div class="controls">
+          <button class="btn" id="btnPrev">السابق ←</button>
+          <button class="btn btn-primary" id="btnNext">التالي →</button>
+        </div>
+      </div>
+
+      <footer>يمكن تعديل البطاقات وإضافة بطاقات جديدة من «مفتاح المعلم/ة».</footer>
+    </section>
+
+    <!-- TEACHER VIEW -->
+    <section id="view-teacher" class="view">
+      <div class="card stack">
+        <h2 style="margin:0">مفتاح المعلم/ة</h2>
+        <p class="muted" style="margin:0">لوحة للمعلم/ة للتحكّم في البيانات والإعدادات. كل شيء يعمل محليًا داخل المتصفح (لا توجد قاعدة بيانات خارجية).</p>
+
+        <div class="grid-2">
+          <div class="card stack">
+            <h3 style="margin:0">مصفوفة المستويات والمهارات</h3>
+            <table class="table">
+              <thead><tr><th>المستوى</th><th>التركيز</th><th>أمثلة</th></tr></thead>
+              <tbody>
+                <tr><td>1</td><td>حركات قصيرة + سكون</td><td>قَلَمٌ، دَفْتَرٌ، مَكْتَبٌ…</td></tr>
+                <tr><td>2</td><td>مدود + شدّة</td><td>كِتَابٌ، تُفَّاحَةٌ، قِطَّةٌ…</td></tr>
+              </tbody>
+            </table>
+            <div class="note">نصيحة: اطلب/ي من الطالب/ة قراءة الكلمة قبل تشغيل الصوت أو قبل تسجيل صوته/ا.</div>
+          </div>
+
+          <div class="card stack">
+            <h3 style="margin:0">إضافة بطاقة جديدة</h3>
+
+            <div class="row" style="justify-content:space-between;align-items:center;margin-top:6px">
+              <label class="chip">
+                <input type="checkbox" id="autoAnalyze" checked>
+                توليد تلقائي للتقطيع/المهارة/المستوى
+              </label>
+              <button class="inline-btn" id="btnAnalyzeNow">⚙️ توليد الآن</button>
+            </div>
+            <p class="hint" style="margin:0">اكتب/ي الكلمة (مشكولة) وسيقترح النظام التقطيع والمهارة والمستوى تلقائيًا (يمكنك التعديل يدويًا).</p>
+
+            <div class="grid-2">
+              <div class="field"><label>الكلمة (مشكولة)</label><input id="fWord" placeholder="مثال: قَلَمٌ"></div>
+              <div class="field"><label>المستوى</label>
+                <select id="fLevel">
+                  <option value="1">1 — سهل</option>
+                  <option value="2">2 — متوسط</option>
+                </select>
+              </div>
+              <div class="field"><label>المجال</label>
+                <select id="fDomain">
+                  <option>مدرستي</option>
+                  <option>طعام</option>
+                  <option>حيوانات</option>
+                  <option>عائلتي</option>
+                </select>
+              </div>
+              <div class="field"><label>المهارة</label>
+                <select id="fSkill">
+                  <option value="short_vowels">حركات قصيرة</option>
+                  <option value="sukun">سكون</option>
+                  <option value="long_vowels">مدود</option>
+                  <option value="shadda">شدّة</option>
+                </select>
+              </div>
+              <div class="field" style="grid-column:1/-1"><label>التقطيع الصوتي (استخدم «/» بين المقاطع)</label><input id="fSeg" placeholder="قَ / لَ / مٌ"></div>
+              <div class="field" style="grid-column:1/-1"><label>جملة قصيرة</label><input id="fSent" placeholder="هَذَا قَلَمٌ أَزْرَقُ."></div>
+            </div>
+            <div class="row" style="justify-content:flex-end">
+              <button class="btn btn-green" id="btnAdd">إضافة</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card stack">
+          <h3 style="margin:0">البيانات — تصدير/استيراد</h3>
+          <div class="row" style="flex-wrap:wrap;gap:10px">
+            <button class="btn" id="btnExport">تصدير JSON (Versioned)</button>
+            <label class="btn">
+              استيراد JSON
+              <input id="fileImport" type="file" accept="application/json" style="display:none">
+            </label>
+            <button class="btn" id="btnReset">استعادة مجموعة البداية</button>
+          </div>
+          <p class="hint">
+            تُحفَظ أي تعديلات في <strong>localStorage</strong> على جهازك.
+            يدعم الاستيراد ملفًا قديمًا (مصفوفة) أو ملفًا جديدًا (كائن يحتوي <strong>cards</strong> و<strong>version</strong>).
+          </p>
+        </div>
+
+        <div class="center">
+          <button class="btn" onclick="go('view-home')">رجوع للرئيسية</button>
+        </div>
+      </div>
+    </section>
+
+    <footer>© اقرأ الكلمة — نسخة تجريبية تعليمية — برمجة /أ: فاطمة هزازي</footer>
+  </div>
+
+<script>
+'use strict';
+
+/* ✅ إزالة أي نص إنجليزي “Put your HTML text here” إذا كان مُحقن داخل الصفحة */
+(function removeInjectedEnglishText(){
+  const target = "Put your HTML text here";
+  try{
+    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+    const nodes = [];
+    while(walker.nextNode()){
+      const n = walker.currentNode;
+      if(n.nodeValue && n.nodeValue.trim() === target) nodes.push(n);
+    }
+    nodes.forEach(n=>{
+      const p = n.parentElement;
+      if(p && p.textContent.trim()===target) p.remove();
+      else n.nodeValue = '';
+    });
+  }catch(e){}
+})();
+
+/* ---------- أرقام هندية للواجهة ---------- */
+function toArabicDigits(n){
+  const map = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩'];
+  return String(n).replace(/[0-9]/g, d => map[Number(d)]);
+}
+
+/* =========================
+   وحدة التحليل الآلي (Seg + Skill + Level)
+========================= */
+const MARKS = {
+  TANWIN_FATH:'\u064B', TANWIN_DAMM:'\u064C', TANWIN_KASR:'\u064D',
+  FATHA:'\u064E', DAMMA:'\u064F', KASRA:'\u0650',
+  SHADDA:'\u0651', SUKUN:'\u0652', DAGGER:'\u0670'
+};
+function isDiacritic(ch){ return /[\u064B-\u0652\u0670]/.test(ch); }
+function stripTatweel(s){ return (s||'').replace(/\u0640/g,''); }
+function baseChar(cluster){ for(const ch of cluster){ if(!isDiacritic(ch)) return ch; } return ''; }
+function marksOf(cluster){ return (cluster||'').replace(/[^\u064B-\u0652\u0670]/g,''); }
+function shortVowelType(cluster){
+  const m = marksOf(cluster);
+  if(m.includes(MARKS.FATHA) || m.includes(MARKS.TANWIN_FATH)) return 'a';
+  if(m.includes(MARKS.DAMMA) || m.includes(MARKS.TANWIN_DAMM)) return 'u';
+  if(m.includes(MARKS.KASRA) || m.includes(MARKS.TANWIN_KASR)) return 'i';
+  return null;
+}
+function splitClusters(word){
+  const s = stripTatweel(String(word||''));
+  const clusters = [];
+  let current = '';
+  for(let i=0;i<s.length;i++){
+    const ch = s[i];
+    if(isDiacritic(ch)){
+      if(current) current += ch;
+      else clusters.push(ch);
+      continue;
+    }
+    if(current) clusters.push(current);
+    current = ch;
+  }
+  if(current) clusters.push(current);
+  return clusters.filter(c=>c.trim().length>0);
+}
+function canMergeLong(prevCluster, nextCluster){
+  const v = shortVowelType(prevCluster);
+  if(!v) return false;
+  const nextBase = baseChar(nextCluster);
+  const nextMarks = marksOf(nextCluster);
+  if(nextMarks.length>0) return false;
+  if(v==='a' && (nextBase==='ا' || nextBase==='ى' || nextBase==='آ')) return true;
+  if(v==='u' && nextBase==='و') return true;
+  if(v==='i' && nextBase==='ي') return true;
+  return false;
+}
+function autoSegment(word){
+  const clusters = splitClusters(word);
+  const segs = [];
+  for(let i=0;i<clusters.length;i++){
+    let c = clusters[i];
+    if(i+1<clusters.length && canMergeLong(c, clusters[i+1])){
+      c = c + clusters[i+1];
+      i++;
+    }
+    segs.push(c);
+  }
+  return segs.join(' / ');
+}
+function hasLongVowelPattern(word){
+  if(String(word||'').includes('آ')) return true;
+  const clusters = splitClusters(word);
+  for(let i=0;i<clusters.length-1;i++){
+    if(canMergeLong(clusters[i], clusters[i+1])) return true;
+  }
+  return false;
+}
+function detectSkill(word){
+  const w = String(word||'');
+  if(w.includes(MARKS.SHADDA)) return 'shadda';
+  if(hasLongVowelPattern(w)) return 'long_vowels';
+  if(w.includes(MARKS.SUKUN)) return 'sukun';
+  return 'short_vowels';
+}
+function recommendLevel(word, skill, seg){
+  let lvl = (skill==='shadda' || skill==='long_vowels') ? 2 : 1;
+  const parts = String(seg||'').split('/').map(x=>x.trim()).filter(Boolean);
+  if(parts.length >= 5) lvl = Math.max(lvl, 2);
+  return lvl;
+}
+function analyzeWord(word){
+  const seg = autoSegment(word);
+  const skill = detectSkill(word);
+  const level = recommendLevel(word, skill, seg);
+  return {seg, skill, level};
+}
+
+/* =========================
+   البيانات + التخزين
+========================= */
+const DATA_VERSION = 1;
+const STORAGE_KEY = 'iqra_cards_v3';
+const LEGACY_KEY = 'iqra_cards_v2';
+
+const DEFAULT_DATA = [
+  { word:'قَلَمٌ', seg:'قَ / لَ / مٌ', sentence:'هَذَا قَلَمٌ أَزْرَقُ.', domain:'مدرستي', level:1, skill:'short_vowels' },
+  { word:'دَفْتَرٌ', seg:'دَ / فْ / تَ / رٌ', sentence:'هَذَا دَفْتَرٌ جَدِيدٌ.', domain:'مدرستي', level:1, skill:'sukun' },
+  { word:'مَكْتَبٌ', seg:'مَ / كْ / تَ / بٌ', sentence:'فِي الصَّفِّ مَكْتَبٌ كَبِيرٌ.', domain:'مدرستي', level:1, skill:'sukun' },
+  { word:'مِسْطَرَةٌ', seg:'مِ / سْ / طَ / رَ / ةٌ', sentence:'عِنْدِي مِسْطَرَةٌ طَوِيلَةٌ.', domain:'مدرستي', level:1, skill:'sukun' },
+  { word:'خُبْزٌ', seg:'خُ / بْ / زٌ', sentence:'أُحِبُّ خُبْزًا سَاخِنًا.', domain:'طعام', level:1, skill:'sukun' },
+  { word:'عَسَلٌ', seg:'عَ / سَ / لٌ', sentence:'العَسَلُ لَذِيذٌ.', domain:'طعام', level:1, skill:'short_vowels' },
+  { word:'مَوْزٌ', seg:'مَوْ / زٌ', sentence:'المَوْزُ طَعَامٌ مُفِيدٌ.', domain:'طعام', level:1, skill:'sukun' },
+  { word:'أَرْزٌ', seg:'أَ / رْ / زٌ', sentence:'نَأْكُلُ أَرْزًا بِالخُضَارِ.', domain:'طعام', level:1, skill:'sukun' },
+  { word:'أَرْنَبٌ', seg:'أَ / رْ / نَ / بٌ', sentence:'الأَرْنَبُ سَرِيعٌ.', domain:'حيوانات', level:1, skill:'sukun' },
+  { word:'نَحْلَةٌ', seg:'نَ / حْ / لَ / ةٌ', sentence:'النَّحْلَةُ تَصْنَعُ العَسَلَ.', domain:'حيوانات', level:1, skill:'sukun' },
+  { word:'طَيْرٌ', seg:'طَ / يْ / رٌ', sentence:'الطَّيْرُ يَطِيرُ فِي السَّمَاءِ.', domain:'حيوانات', level:1, skill:'sukun' },
+  { word:'سَمَكَةٌ', seg:'سَ / مَ / كَ / ةٌ', sentence:'سَمَكَةٌ فِي الحَوْضِ.', domain:'حيوانات', level:1, skill:'short_vowels' },
+
+  { word:'كِتَابٌ', seg:'كِ / تا / بٌ', sentence:'أَقْرَأُ كِتَابًا مُفِيدًا.', domain:'مدرستي', level:2, skill:'long_vowels' },
+  { word:'دُرُوسٌ', seg:'دُ / رُو / صٌ', sentence:'لَدَيْنَا دُرُوسٌ مُهِمَّةٌ.', domain:'مدرستي', level:2, skill:'long_vowels' },
+  { word:'مُعَلِّمَةٌ', seg:'مُ / عَلِّ / مَ / ةٌ', sentence:'مُعَلِّمَتُنَا رَائِعَةٌ.', domain:'مدرستي', level:2, skill:'shadda' },
+  { word:'كُرْسِيٌّ', seg:'كُ / رْ / سِيٌّ', sentence:'هَذَا كُرْسِيٌّ مُرِيحٌ.', domain:'مدرستي', level:2, skill:'long_vowels' },
+
+  { word:'قِطَّةٌ', seg:'قِ / طَّ / ةٌ', sentence:'قِطَّتِي صَغِيرَةٌ.', domain:'حيوانات', level:2, skill:'shadda' },
+  { word:'جِمَالٌ', seg:'جِ / ما / لٌ', sentence:'الجِمَالُ حَيَوَانَاتٌ صَبُورَةٌ.', domain:'حيوانات', level:2, skill:'long_vowels' },
+  { word:'ذِئَابٌ', seg:'ذِ / آ / بٌ', sentence:'تَعِيشُ الذِّئَابُ فِي الغَابَةِ.', domain:'حيوانات', level:2, skill:'long_vowels' },
+
+  { word:'تُفَّاحَةٌ', seg:'تُ / فَّا / حَ / ةٌ', sentence:'آكُلُ تُفَّاحَةً كُلَّ يَوْمٍ.', domain:'طعام', level:2, skill:'shadda' },
+  { word:'حَلِيبٌ', seg:'حَ / لِي / بٌ', sentence:'أَشْرَبُ حَلِيبًا دَافِئًا.', domain:'طعام', level:2, skill:'long_vowels' },
+  { word:'زَيْتُونٌ', seg:'زَيْ / تُو / نٌ', sentence:'نَأْكُلُ الزَّيْتُونَ مَعَ الخُبْزِ.', domain:'طعام', level:2, skill:'long_vowels' },
+  { word:'عُصِيرٌ', seg:'عُ / صِي / رٌ', sentence:'أُفَضِّلُ عُصِيرَ البُرْتُقَالِ.', domain:'طعام', level:2, skill:'long_vowels' },
+
+  { word:'أُمٌّ', seg:'أُ / مٌّ', sentence:'أُمِّي كَرِيمَةٌ.', domain:'عائلتي', level:2, skill:'shadda' },
+  { word:'جَدَّةٌ', seg:'جَ / دَّ / ةٌ', sentence:'أُحِبُّ جَدَّتِي.', domain:'عائلتي', level:2, skill:'shadda' },
+  { word:'أُسْرَةٌ', seg:'أُ / سْ / رَ / ةٌ', sentence:'هَذِهِ أُسْرَتِي.', domain:'عائلتي', level:2, skill:'sukun' }
+];
+
+function saveData(arr){ localStorage.setItem(STORAGE_KEY, JSON.stringify(arr)); }
+function loadData(){
+  const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(LEGACY_KEY);
+  if(!raw){ saveData(DEFAULT_DATA); return [...DEFAULT_DATA]; }
+  try{
+    const parsed = JSON.parse(raw);
+    if(Array.isArray(parsed)) return parsed;
+    if(parsed && typeof parsed === 'object' && Array.isArray(parsed.cards)) return parsed.cards;
+  }catch{}
+  return [...DEFAULT_DATA];
+}
+
+function normalizeCard(card){
+  const word = String(card?.word||'').trim();
+  const sentence = String(card?.sentence||'').trim();
+  const domain = String(card?.domain||'مدرستي').trim() || 'مدرستي';
+  let seg = String(card?.seg||'').trim();
+  let skill = String(card?.skill||'').trim();
+  let level = Number(card?.level||0);
+  if(!word || !sentence) return null;
+
+  const auto = analyzeWord(word);
+  if(!seg) seg = auto.seg;
+  if(!['short_vowels','sukun','long_vowels','shadda'].includes(skill)) skill = auto.skill;
+  if(!(level===1 || level===2)) level = auto.level;
+
+  return {word, seg, sentence, domain, level, skill};
+}
+function normalizeAll(cards){
+  const out = [];
+  let changed = false;
+  for(const c of cards){
+    const n = normalizeCard(c);
+    if(n){ out.push(n); if(JSON.stringify(n)!==JSON.stringify(c)) changed = true; }
+    else changed = true;
+  }
+  return {out, changed};
+}
+
+let DATA = loadData();
+{
+  const {out, changed} = normalizeAll(DATA);
+  DATA = out;
+  if(changed) saveData(DATA);
+}
+
+/* ---------- عدادات الرئيسية ---------- */
+function updateCounts(){
+  const all = DATA.length;
+  const food = DATA.filter(x=>x.domain==='طعام').length;
+  const animals = DATA.filter(x=>x.domain==='حيوانات').length;
+  const school = DATA.filter(x=>x.domain==='مدرستي').length;
+  const family = DATA.filter(x=>x.domain==='عائلتي').length;
+  document.getElementById('countAll').textContent = toArabicDigits(all);
+  document.getElementById('countFood').textContent = toArabicDigits(food);
+  document.getElementById('countAnimals').textContent = toArabicDigits(animals);
+  document.getElementById('countSchool').textContent = toArabicDigits(school);
+  document.getElementById('countFamily').textContent = toArabicDigits(family);
+}
+
+/* ---------- تنقّل ---------- */
+function go(id){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+document.getElementById('btnHome').addEventListener('click', ()=>go('view-home'));
+document.getElementById('btnTeacher').addEventListener('click', ()=>go('view-teacher'));
+
+/* ---------- اختيار المستوى والبدء ---------- */
+let currentSet = [];
+let currentIndex = 0;
+let currentFilters = { level:null, domain:'all', skill:'all' };
+
+function openLevel(level){
+  currentFilters.level = level;
+  document.getElementById('levelTitle').textContent = 'المستوى ' + level + ' — اختر/ي التصفية';
+  go('view-level');
+}
+document.getElementById('btnStartFiltered').addEventListener('click', ()=>{
+  const domain = document.querySelector('input[name="domain"]:checked').value;
+  const skill = document.querySelector('input[name="skill"]:checked').value;
+  startCards({level: currentFilters.level, domain, skill});
+});
+function startCards({level=null, domain='all', skill='all'}){
+  currentFilters = {level, domain, skill};
+  currentSet = DATA.filter(item=>{
+    const okLevel = (level===null) ? true : item.level===level;
+    const okDomain = (domain==='all') ? true : item.domain===domain;
+    const okSkill = (skill==='all') ? true : item.skill===skill;
+    return okLevel && okDomain && okSkill;
+  });
+  confirmStopRecordingIfAny();
+  if(currentSet.length===0){ alert('لا توجد بطاقات وفق التصفية المختارة.'); return; }
+  currentIndex = 0;
+  renderTags();
+  go('view-cards');
+  renderCard();
+}
+function renderTags(){
+  const tL = document.getElementById('tagLevel');
+  const tD = document.getElementById('tagDomain');
+  const tS = document.getElementById('tagSkill');
+  tL.textContent = currentFilters.level? ('المستوى ' + currentFilters.level): 'كل المستويات';
+  tD.textContent = currentFilters.domain==='all'? 'كل المجالات' : currentFilters.domain;
+  const skillMap = {all:'كل المهارات', short_vowels:'حركات قصيرة', sukun:'سكون', long_vowels:'مدود', shadda:'شدّة'};
+  tS.textContent = skillMap[currentFilters.skill];
+}
+
+/* ---------- عرض البطاقة ---------- */
+const elWord = document.getElementById('wordText');
+const elSeg = document.getElementById('segWrap');
+const elSent = document.getElementById('sentenceText');
+const elStatus = document.getElementById('statusIndex');
+const bar = document.getElementById('bar');
+const btnShowSeg = document.getElementById('btnShowSeg');
+const btnHideSeg = document.getElementById('btnHideSeg');
+
+function hideSeg(){ elSeg.classList.add('hidden'); btnHideSeg.classList.add('hidden'); btnShowSeg.classList.remove('hidden'); }
+function showSeg(){ elSeg.classList.remove('hidden'); btnHideSeg.classList.remove('hidden'); btnShowSeg.classList.add('hidden'); }
+btnShowSeg.addEventListener('click', showSeg);
+btnHideSeg.addEventListener('click', hideSeg);
+
+function safeSegHTML(segStr){
+  const seg = String(segStr||'');
+  return seg.split('/').map(x=>`<span>${x.trim()}</span>`).join('');
+}
+
+let CURRENT_CARD_KEY = null;
+function cardKey(item){ return (item.word||'') + '||' + (item.sentence||'') + '||' + (item.domain||''); }
+
+function renderCard(){
+  const item = currentSet[currentIndex];
+  if(!item.seg || !item.skill || !item.level){
+    const auto = analyzeWord(item.word);
+    item.seg = item.seg || auto.seg;
+    item.skill = item.skill || auto.skill;
+    item.level = item.level || auto.level;
+  }
+  elWord.textContent = item.word;
+  elSeg.innerHTML = safeSegHTML(item.seg);
+  elSent.textContent = item.sentence;
+
+  const idx = toArabicDigits(currentIndex+1) + ' / ' + toArabicDigits(currentSet.length);
+  elStatus.textContent = idx;
+  bar.style.width = ((currentIndex+1)/currentSet.length*100).toFixed(2)+'%';
+
+  CURRENT_CARD_KEY = cardKey(item);
+  hideSeg();
+  clearTyping();
+  clearPad();
+  refreshRecordingUI();
+}
+
+/* تنقل */
+document.getElementById('btnNext').addEventListener('click', ()=>{
+  confirmStopRecordingIfAny();
+  if(currentIndex<currentSet.length-1){ currentIndex++; renderCard(); }
+});
+document.getElementById('btnPrev').addEventListener('click', ()=>{
+  confirmStopRecordingIfAny();
+  if(currentIndex>0){ currentIndex--; renderCard(); }
+});
+
+/* نسخ */
+document.getElementById('btnCopyWord').addEventListener('click', async ()=>{
+  try{
+    await navigator.clipboard.writeText(elWord.textContent);
+    alert('تم نسخ الكلمة ✔');
+  }catch{ alert('تعذّر النسخ.'); }
+});
+
+/* ---------- النطق ---------- */
+let AR_VOICES = [];
+function pickArabicVoice(){
+  const v = speechSynthesis.getVoices().filter(v=>/^ar(-|$)/i.test(v.lang));
+  AR_VOICES = v;
+}
+if('speechSynthesis' in window){
+  speechSynthesis.onvoiceschanged = pickArabicVoice;
+  pickArabicVoice();
+}
+function speak(text){
+  if(!('speechSynthesis' in window)){ alert('ميزة النطق غير متاحة في هذا المتصفح.'); return; }
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'ar-SA';
+  u.rate = 0.85; u.pitch = 1.05;
+  if(AR_VOICES.length){ u.voice = AR_VOICES[0]; }
+  speechSynthesis.cancel();
+  speechSynthesis.speak(u);
+}
+document.getElementById('btnSpeakWord').addEventListener('click', ()=>speak(elWord.textContent));
+document.getElementById('btnSpeakSentence').addEventListener('click', ()=>speak(elSent.textContent));
+
+/* ---------- مساحة النسخ ---------- */
+const penArea = document.getElementById('penArea');
+const textArea = document.getElementById('textArea');
+const typing = document.getElementById('typing');
+function setMode(mode){
+  if(mode==='text'){ penArea.classList.add('hidden'); textArea.classList.remove('hidden'); typing.focus(); }
+  else{ textArea.classList.add('hidden'); penArea.classList.remove('hidden'); }
+}
+document.querySelectorAll('input[name="mode"]').forEach(r=>{
+  r.addEventListener('change', (e)=> setMode(e.target.value));
+});
+function clearTyping(){ typing.value=''; }
+
+const pad = document.getElementById('pad');
+const ctx = pad.getContext('2d');
+function fitCanvas(){
+  const dpr = Math.max(1, window.devicePixelRatio||1);
+  const cssWidth = pad.clientWidth;
+  const cssHeight = pad.clientHeight;
+  pad.width = Math.floor(cssWidth * dpr);
+  pad.height = Math.floor(cssHeight * dpr);
+  ctx.setTransform(1,0,0,1,0,0);
+  ctx.scale(dpr, dpr);
+  ctx.lineCap = 'round'; ctx.lineJoin='round';
+  ctx.lineWidth = 4; ctx.strokeStyle = '#111827';
+  ctx.clearRect(0,0,cssWidth,cssHeight);
+}
+function clearPad(){ fitCanvas(); }
+fitCanvas(); window.addEventListener('resize', fitCanvas);
+
+let drawing = false, lastX=0, lastY=0;
+function ppos(e){
+  const r = pad.getBoundingClientRect();
+  return {x: e.clientX - r.left, y: e.clientY - r.top};
+}
+pad.addEventListener('pointerdown', (e)=>{
+  drawing = true;
+  const p = ppos(e); lastX=p.x; lastY=p.y;
+  pad.setPointerCapture(e.pointerId);
+  e.preventDefault();
+});
+pad.addEventListener('pointermove', (e)=>{
+  if(!drawing) return;
+  const p = ppos(e);
+  ctx.beginPath(); ctx.moveTo(lastX,lastY); ctx.lineTo(p.x,p.y); ctx.stroke();
+  lastX=p.x; lastY=p.y;
+  e.preventDefault();
+});
+pad.addEventListener('pointerup', (e)=>{ drawing=false; try{pad.releasePointerCapture(e.pointerId);}catch{} e.preventDefault(); });
+pad.addEventListener('pointercancel', ()=>{ drawing=false; });
+document.getElementById('btnClearDraw').addEventListener('click', clearPad);
+
+/* ---------- التسجيل الصوتي (نفس الوظائف) ---------- */
+const recOverall = document.getElementById('recOverall');
+const btnRecWordStart = document.getElementById('btnRecWordStart');
+const btnRecWordStop  = document.getElementById('btnRecWordStop');
+const btnRecWordPlay  = document.getElementById('btnRecWordPlay');
+const btnRecWordDelete= document.getElementById('btnRecWordDelete');
+const audioWord       = document.getElementById('audioWord');
+const recWordTimer    = document.getElementById('recWordTimer');
+
+const btnRecSentStart = document.getElementById('btnRecSentStart');
+const btnRecSentStop  = document.getElementById('btnRecSentStop');
+const btnRecSentPlay  = document.getElementById('btnRecSentPlay');
+const btnRecSentDelete= document.getElementById('btnRecSentDelete');
+const audioSent       = document.getElementById('audioSent');
+const recSentTimer    = document.getElementById('recSentTimer');
+
+const recordings = new Map();
+function getRecEntry(key){ if(!recordings.has(key)) recordings.set(key, {word:null, sentence:null}); return recordings.get(key); }
+function revokeIfAny(rec){ if(rec && rec.url){ try{ URL.revokeObjectURL(rec.url); }catch{} } }
+function formatTime(ms){
+  const total = Math.floor(ms/1000);
+  const mm = String(Math.floor(total/60)).padStart(2,'0');
+  const ss = String(total%60).padStart(2,'0');
+  return `${mm}:${ss}`;
+}
+let recState = {active:false,type:null,key:null,stream:null,recorder:null,chunks:[],startedAt:0,timerId:null};
+function canRecord(){ return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia && window.MediaRecorder); }
+function setOverallStatus(text){ recOverall.textContent = text; }
+function setButtonsWhileRecording(type, isOn){
+  const other = type==='word' ? 'sentence' : 'word';
+  if(type==='word'){ btnRecWordStart.classList.toggle('hidden', isOn); btnRecWordStop.classList.toggle('hidden', !isOn); }
+  else{ btnRecSentStart.classList.toggle('hidden', isOn); btnRecSentStop.classList.toggle('hidden', !isOn); }
+  if(isOn){
+    if(other==='word') btnRecWordStart.disabled = true;
+    if(other==='sentence') btnRecSentStart.disabled = true;
+    btnRecWordPlay.disabled = btnRecSentPlay.disabled = true;
+    btnRecWordDelete.disabled = btnRecSentDelete.disabled = true;
+  }else{
+    btnRecWordStart.disabled = false;
+    btnRecSentStart.disabled = false;
+  }
+}
+async function startRecording(type){
+  if(recState.active) return;
+  if(!canRecord()){ alert('ميزة التسجيل غير مدعومة في هذا المتصفح.'); return; }
+  if(!CURRENT_CARD_KEY){ alert('ابدأ/ي البطاقات أولًا.'); return; }
+
+  try{
+    const stream = await navigator.mediaDevices.getUserMedia({audio:true});
+    let options = {};
+    const prefer = 'audio/webm;codecs=opus';
+    if(MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(prefer)) options.mimeType = prefer;
+    const recorder = new MediaRecorder(stream, options);
+
+    recState = {active:true,type,key:CURRENT_CARD_KEY,stream,recorder,chunks:[],startedAt:Date.now(),timerId:null};
+    setButtonsWhileRecording(type, true);
+    setOverallStatus('🔴 جاري التسجيل...');
+
+    const timerEl = (type==='word') ? recWordTimer : recSentTimer;
+    timerEl.textContent = '00:00';
+    recState.timerId = setInterval(()=>{ timerEl.textContent = formatTime(Date.now()-recState.startedAt); }, 200);
+
+    recorder.ondataavailable = (e)=>{ if(e.data && e.data.size>0) recState.chunks.push(e.data); };
+    recorder.onstop = ()=>{
+      try{ clearInterval(recState.timerId); }catch{}
+      const blob = new Blob(recState.chunks, {type: recorder.mimeType || 'audio/webm'});
+      const url = URL.createObjectURL(blob);
+      const entry = getRecEntry(recState.key);
+
+      const slot = (type==='word') ? entry.word : entry.sentence;
+      revokeIfAny(slot);
+      if(type==='word') entry.word = {blob, url};
+      else entry.sentence = {blob, url};
+
+      try{ recState.stream.getTracks().forEach(t=>t.stop()); }catch{}
+      recState.active = false;
+      setButtonsWhileRecording(type, false);
+      setOverallStatus('جاهز');
+      refreshRecordingUI();
+    };
+    recorder.start();
+  }catch(err){
+    console.error(err);
+    alert('تعذّر بدء التسجيل. تأكد/ي من السماح بالميكروفون وفتح الصفحة عبر HTTPS.');
+    recState.active = false;
+    setOverallStatus('جاهز');
+    setButtonsWhileRecording(type, false);
+  }
+}
+function stopRecording(){ if(recState.active && recState.recorder) try{ recState.recorder.stop(); }catch{} }
+function confirmStopRecordingIfAny(){ if(recState.active) stopRecording(); }
+function refreshRecordingUI(){
+  if(!CURRENT_CARD_KEY) return;
+  const entry = getRecEntry(CURRENT_CARD_KEY);
+
+  if(entry.word && entry.word.url){
+    btnRecWordPlay.disabled = false; btnRecWordDelete.disabled = false;
+    audioWord.src = entry.word.url; audioWord.classList.remove('hidden');
+  }else{
+    btnRecWordPlay.disabled = true; btnRecWordDelete.disabled = true;
+    audioWord.removeAttribute('src'); audioWord.classList.add('hidden'); recWordTimer.textContent='00:00';
+  }
+  if(entry.sentence && entry.sentence.url){
+    btnRecSentPlay.disabled = false; btnRecSentDelete.disabled = false;
+    audioSent.src = entry.sentence.url; audioSent.classList.remove('hidden');
+  }else{
+    btnRecSentPlay.disabled = true; btnRecSentDelete.disabled = true;
+    audioSent.removeAttribute('src'); audioSent.classList.add('hidden'); recSentTimer.textContent='00:00';
+  }
+  if(!canRecord()) setOverallStatus('التسجيل غير مدعوم هنا');
+  else if(!recState.active) setOverallStatus('جاهز');
+}
+btnRecWordStart.addEventListener('click', ()=>startRecording('word'));
+btnRecSentStart.addEventListener('click', ()=>startRecording('sentence'));
+btnRecWordStop.addEventListener('click', stopRecording);
+btnRecSentStop.addEventListener('click', stopRecording);
+btnRecWordPlay.addEventListener('click', ()=>{ if(!audioWord.classList.contains('hidden')) audioWord.play(); });
+btnRecSentPlay.addEventListener('click', ()=>{ if(!audioSent.classList.contains('hidden')) audioSent.play(); });
+btnRecWordDelete.addEventListener('click', ()=>{
+  if(!CURRENT_CARD_KEY) return;
+  const entry = getRecEntry(CURRENT_CARD_KEY);
+  if(entry.word){ revokeIfAny(entry.word); entry.word=null; }
+  refreshRecordingUI();
+});
+btnRecSentDelete.addEventListener('click', ()=>{
+  if(!CURRENT_CARD_KEY) return;
+  const entry = getRecEntry(CURRENT_CARD_KEY);
+  if(entry.sentence){ revokeIfAny(entry.sentence); entry.sentence=null; }
+  refreshRecordingUI();
+});
+
+/* ---------- إضافة بطاقة ---------- */
+const fWord = document.getElementById('fWord');
+const fSeg  = document.getElementById('fSeg');
+const fSent = document.getElementById('fSent');
+const fLevel= document.getElementById('fLevel');
+const fDomain=document.getElementById('fDomain');
+const fSkill=document.getElementById('fSkill');
+const autoAnalyze = document.getElementById('autoAnalyze');
+const btnAnalyzeNow = document.getElementById('btnAnalyzeNow');
+
+function runAutoFill(){
+  const w = fWord.value.trim(); if(!w) return;
+  const a = analyzeWord(w);
+  fSeg.value = a.seg;
+  fSkill.value = a.skill;
+  fLevel.value = String(a.level);
+}
+fWord.addEventListener('input', ()=>{ if(autoAnalyze.checked) runAutoFill(); });
+btnAnalyzeNow.addEventListener('click', ()=>{ runAutoFill(); alert('تم التوليد ✔ يمكنك التعديل يدويًا قبل الإضافة.'); });
+
+document.getElementById('btnAdd').addEventListener('click', ()=>{
+  const w = fWord.value.trim();
+  let seg = fSeg.value.trim();
+  const sent = fSent.value.trim();
+  let level = Number(fLevel.value);
+  const domain = fDomain.value;
+  let skill = fSkill.value;
+
+  if(!w || !sent){ alert('يرجى تعبئة: الكلمة + الجملة على الأقل.'); return; }
+
+  if(autoAnalyze.checked){
+    const a = analyzeWord(w);
+    if(!seg) seg = a.seg;
+    if(!skill) skill = a.skill;
+    if(!(level===1 || level===2)) level = a.level;
+  }
+  if(!seg){ alert('يرجى كتابة التقطيع أو استخدام التوليد التلقائي.'); return; }
+
+  DATA.push({word:w, seg, sentence:sent, domain, level, skill});
+  saveData(DATA);
+  updateCounts();
+  alert('تمت الإضافة ✔');
+  fWord.value=''; fSeg.value=''; fSent.value='';
+});
+
+/* ---------- تصدير/استيراد ---------- */
+document.getElementById('btnExport').addEventListener('click', ()=>{
+  const payload = {version: DATA_VERSION, exportedAt: new Date().toISOString(), cards: DATA};
+  const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'iqra-cards.v' + DATA_VERSION + '.json'; a.click();
+  setTimeout(()=>URL.revokeObjectURL(url), 1000);
+});
+function parseImportedJSON(resultText){
+  const obj = JSON.parse(resultText);
+  let cards = obj;
+  if(obj && typeof obj==='object' && Array.isArray(obj.cards)) cards = obj.cards;
+  if(!Array.isArray(cards)) throw new Error('bad-format');
+  const {out} = normalizeAll(cards);
+  if(out.length===0) throw new Error('empty');
+  return out;
+}
+document.getElementById('fileImport').addEventListener('change', (e)=>{
+  const file = e.target.files[0]; if(!file) return;
+  const r = new FileReader();
+  r.onload = ()=>{
+    try{
+      DATA = parseImportedJSON(r.result);
+      saveData(DATA);
+      updateCounts();
+      alert('تم الاستيراد ✔');
+    }catch(err){
+      console.error(err);
+      alert('ملف غير صالح. تأكد/ي أنه JSON صحيح ويحتوي على بطاقات.');
+    }
+  };
+  r.readAsText(file, 'utf-8');
+});
+document.getElementById('btnReset').addEventListener('click', ()=>{
+  if(confirm('استعادة مجموعة البداية؟ سيُستبدل أي تعديل.')){
+    DATA = [...DEFAULT_DATA];
+    saveData(DATA);
+    updateCounts();
+    alert('تمت الاستعادة ✔');
+  }
+});
+
+/* ---------- تشغيل أولي ---------- */
+updateCounts();
+</script>
+</body>
+</html>
